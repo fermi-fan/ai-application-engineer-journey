@@ -4,7 +4,7 @@ class ChatRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=5000, description="The prompt to send to the AI model.")
 
 class ChatResponse(BaseModel):
-    response_id: str
+    request_id: str
     provider: str
     latency_ms: int
     tokens_est: int
