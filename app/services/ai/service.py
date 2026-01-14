@@ -34,6 +34,9 @@ def chat(prompt: str) -> Dict[str, Any]:
         "tokens_est": result.tokens_est,
         "answer": result.text,
     }
+    print(
+    f"ai.chat request_id={request_id} provider={result.provider} "
+    f"latency_ms={latency_ms} tokens_est={result.tokens_est}")
 
 
 def explain(topic: str, context: str) -> Dict[str, Any]:
