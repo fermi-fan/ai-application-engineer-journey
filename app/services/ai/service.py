@@ -1,30 +1,40 @@
 from __future__ import annotations
 
-import json
 import time
 import uuid
-from typing import Any, Dict
-
-from app.core.settings import settings
-from app.services.ai.prompts import CHAT_V1, EXPLAIN_V1, render
-from app.services.ai.providers import AIProvider, StubProvider
+from dataclasses import dataclass
 
 
-def _get_provider() -> AIProvider:
-    # 后续可以按 settings.ai_provider 选择不同 provider
-    if settings.ai_provider == "stub":
-        return StubProvider()
-    # 默认兜底
-    return StubProvider()
+@dataclass
+class GenResult:
+    provider: str
+    text: str
+    tokens_est: int
 
 
-def chat(prompt: str) -> Dict[str, Any]:
+class StubProvider:
+    name = "stub"
+
+    def generate(self, system: str, user_prompt: str) -> GenResult:
+        # 简单估算 token：按字符/4 粗略估算
+        tokens_est = max(1, (len(system) + len(user_prompt)) // 4)
+        text = (
+            "[stub] Vibe Coding means using rapid AI-assisted iteration to prototype, "
+            "refactor, and ship features with tight feedback loops."
+        )
+        return GenResult(provider=self.name, text=text, tokens_est=tokens_est)
+
+
+_provider = StubProvider()
+
+
+def chat(prompt: str) -> dict:
     request_id = uuid.uuid4().hex
-    provider = _get_provider()
-
     t0 = time.perf_counter()
-    full_prompt = render(CHAT_V1, prompt=prompt)
-    result = provider.generate(full_prompt)
+
+    system = "You are a helpful assistant."
+    result = _provider.generate(system=system, user_prompt=prompt)
+
     latency_ms = int((time.perf_counter() - t0) * 1000)
 
     return {
@@ -34,37 +44,31 @@ def chat(prompt: str) -> Dict[str, Any]:
         "tokens_est": result.tokens_est,
         "answer": result.text,
     }
-    print(
-    f"ai.chat request_id={request_id} provider={result.provider} "
-    f"latency_ms={latency_ms} tokens_est={result.tokens_est}")
 
 
-def explain(topic: str, context: str) -> Dict[str, Any]:
+def explain(topic: str, context: str | None = None) -> dict:
     request_id = uuid.uuid4().hex
-    provider = _get_provider()
-
     t0 = time.perf_counter()
-    full_prompt = render(EXPLAIN_V1, topic=topic, context=context)
-    result = provider.generate(full_prompt)
-    latency_ms = int((time.perf_counter() - t0) * 1000)
 
-    # stub 返回的不是 JSON，这里做一个“工程兜底”
-    parsed: Dict[str, Any]
-    try:
-        parsed = json.loads(result.text)
-    except Exception:
-        parsed = {
-            "summary": f"Explanation for: {topic}",
-            "risks": ["Model output may be inconsistent", "Context may be insufficient"],
-            "next_steps": ["Add real provider", "Add eval & logging", "Add retries/timeouts"],
-        }
+    system = "You are a senior software engineer. Explain clearly and concisely."
+    user_prompt = f"Topic: {topic}\nContext: {context or ''}".strip()
+    result = _provider.generate(system=system, user_prompt=user_prompt)
+
+    latency_ms = int((time.perf_counter() - t0) * 1000)
 
     return {
         "request_id": request_id,
         "provider": result.provider,
         "latency_ms": latency_ms,
         "tokens_est": result.tokens_est,
-        "summary": str(parsed.get("summary", "")),
-        "risks": list(parsed.get("risks", []))[:5],
-        "next_steps": list(parsed.get("next_steps", []))[:5],
+        "explanation": result.text,
+        "risks": [
+            "Model output may be inaccurate or incomplete.",
+            "Provided context may be insufficient for the intended task.",
+        ],
+        "next_steps": [
+            "Add a real provider (OpenAI/Claude) behind the same interface.",
+            "Add structured logging with request_id and latency.",
+            "Add retries/timeouts and basic rate limiting.",
+        ],
     }

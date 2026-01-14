@@ -1,7 +1,12 @@
+from __future__ import annotations
+
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
+
 class ChatRequest(BaseModel):
-    prompt: str = Field(..., min_length=1, max_length=5000, description="The prompt to send to the AI model.")
+    prompt: str = Field(min_length=1)
+
 
 class ChatResponse(BaseModel):
     request_id: str
@@ -10,15 +15,17 @@ class ChatResponse(BaseModel):
     tokens_est: int
     answer: str
 
+
 class ExplainRequest(BaseModel):
-    topic: str = Field(..., min_length=1, max_length=200, description="The topic to explain.")
-    context: str = Field(..., max_length=5000, description="Additional context for the explanation.")
+    topic: str = Field(min_length=1)
+    context: Optional[str] = None
+
 
 class ExplainResponse(BaseModel):
-    explanation_id: str
+    request_id: str
     provider: str
     latency_ms: int
     tokens_est: int
-    summary: str
-    risks: str
-    next_steps: str
+    explanation: str
+    risks: List[str]
+    next_steps: List[str]
