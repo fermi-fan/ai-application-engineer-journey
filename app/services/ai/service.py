@@ -3,7 +3,9 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import dataclass
+import logging
 
+logger = logging.getLogger("ai")
 
 @dataclass
 class GenResult:
@@ -37,6 +39,16 @@ def chat(prompt: str) -> dict:
 
     latency_ms = int((time.perf_counter() - t0) * 1000)
 
+    logger.info(
+    "ai.chat",
+    extra={"extra": {
+        "request_id": request_id,
+        "provider": result.provider,
+        "latency_ms": latency_ms,
+        "tokens_est": result.tokens_est,
+    }},
+)
+
     return {
         "request_id": request_id,
         "provider": result.provider,
@@ -55,6 +67,16 @@ def explain(topic: str, context: str | None = None) -> dict:
     result = _provider.generate(system=system, user_prompt=user_prompt)
 
     latency_ms = int((time.perf_counter() - t0) * 1000)
+
+    logger.info(
+    "ai.explain",
+    extra={"extra": {
+        "request_id": request_id,
+        "provider": result.provider,
+        "latency_ms": latency_ms,
+        "tokens_est": result.tokens_est,
+    }},
+)
 
     return {
         "request_id": request_id,
