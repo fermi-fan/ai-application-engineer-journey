@@ -1,0 +1,56 @@
+body {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 16px;
+  font-family: sans-serif;
+  line-height: 1.5;
+}
+
+h1 {
+  margin-bottom: 24px;
+}
+
+form {
+  display: inline;
+}
+
+.create-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.create-form input {
+  flex: 1;
+  padding: 8px;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.todo-title.completed {
+  color: #666;
+  text-decoration: line-through;
+}
+
+.todo-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+button {
+  padding: 6px 10px;
+  cursor: pointer;
+}

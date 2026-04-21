@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TodoLite</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <h1>TodoLite</h1>
+
+    <form class="create-form" action="/todos" method="post">
+      <input
+        type="text"
+        name="title"
+        placeholder="输入一条新的待办"
+        required
+      />
+      <button type="submit">添加</button>
+    </form>
+
+    {% if todos %}
+    <ul class="todo-list">
+      {% for todo in todos %}
+      <li class="todo-item">
+        <span class="todo-title {% if todo.completed %}completed{% endif %}">
+          {% if todo.completed %}[已完成]{% else %}[未完成]{% endif %} {{
+          todo.title }}
+        </span>
+
+        <div class="todo-actions">
+          <form action="/todos/{{ todo.id }}/toggle" method="post">
+            <button type="submit">
+              {% if todo.completed %}恢复{% else %}完成{% endif %}
+            </button>
+          </form>
+
+          <form action="/todos/{{ todo.id }}/delete" method="post">
+            <button type="submit">删除</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p>还没有待办，先添加一条吧。</p>
+    {% endif %}
+  </body>
+</html>
